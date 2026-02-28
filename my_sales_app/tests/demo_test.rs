@@ -23,22 +23,25 @@ fn simple() {
     order.timestamp(246);
     order.order_type(OrderType::New);
 
+    // reserve space for two elements and create child item encoder
     let mut items = order.items_encoder(2, ItemsEncoder::default());
 
-    let _r = items.advance();
+    let _r = items.advance(); // like next of iterator
     items.product_id(222);
     items.quantity(2);
     let mut price = items.unit_price_encoder();
     price.mantissa(234); // exponent is -2 (two decimals) constant in xml schema
     items = price.parent().unwrap();
 
-    let _r = items.advance();
+    let _r = items.advance(); // like next of iterator
     items.product_id(111);
     items.quantity(3);
-    let mut price = items.unit_price_encoder();
+    let mut price = items.unit_price_encoder(); // child child encoder!
     price.mantissa(123); // exponent is -2 (two decimals) constant in xml schema
-    items = price.parent().unwrap();
-
+    items = price.parent().unwrap(); // ownership back to parent encoder
+    // remember, order -> items -> price, three levels
+    // finally, ownership back to order parent order encoder
+    // parent -> child -> child child encoder
     order = items.parent().unwrap();
 
     order.customer_note("duck is angry");
