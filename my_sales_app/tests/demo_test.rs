@@ -41,7 +41,7 @@ fn simple() {
     items = price.parent().unwrap(); // ownership back to parent encoder
     // remember, order -> items -> price, three levels
     // finally, ownership back to order parent order encoder
-    // parent -> child -> child child encoder
+    // parent -> child -> child child encoder, and return ownership using unwrap!
     order = items.parent().unwrap();
 
     order.customer_note("duck is angry");
