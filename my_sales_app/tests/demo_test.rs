@@ -14,22 +14,28 @@ fn simple() {
         WriteBuf::new(&mut buffer),
         message_header_codec::ENCODED_LENGTH,
     );
-
-    let mut header = order.header(0);
-    order = header.parent().unwrap();
+    // short cut creation of header with block length, version, schema, template id auto set
+    order = order.header(0).parent().unwrap();
 
     order.order_id(234);
     order.client_id(135);
     order.timestamp(246);
-    order.order_type(sales::order_type::OrderType::Cancel);
+    order.order_type(sales::order_type::OrderType::New);
 
-    let mut items = order.items_encoder(1, ItemsEncoder::default());
+    let mut items = order.items_encoder(2, ItemsEncoder::default());
 
     let _r = items.advance();
     items.product_id(222);
     items.quantity(2);
     let mut price = items.unit_price_encoder();
-    price.mantissa(22);
+    price.mantissa(2345); // exponent is -2 (two decimals) constant in xml schema
+    items = price.parent().unwrap();
+
+    let _r = items.advance();
+    items.product_id(333);
+    items.quantity(3);
+    let mut price = items.unit_price_encoder();
+    price.mantissa(4567); // exponent is -2 (two decimals) constant in xml schema
     items = price.parent().unwrap();
 
     order = items.parent().unwrap();
@@ -37,8 +43,8 @@ fn simple() {
     order.customer_note("duck is angry");
 
     let encoded_len = order.get_limit() as usize;
-    let buffer2 = &buffer[..encoded_len];
-    println!("{:?}", buffer2);
+    let dbg_buffer = &buffer[..encoded_len];
+    println!("{:?}", dbg_buffer);
 
     // ****** DECODE ******
     let mut header = MessageHeaderDecoder::default();
@@ -47,7 +53,9 @@ fn simple() {
 
     let block_length = header.block_length();
     let version = header.version();
-    let template_id = header.template_id();
+    let template_id = header.template_id(); // from tmpl id we know what type of message it is
+
+    println!("template_id = {template_id}, block_length = {block_length}, version = {version}");
 
     let mut order = OrderMessageDecoder::default();
     order = order.wrap(
@@ -57,21 +65,28 @@ fn simple() {
         version,
     );
 
-    println!("template_id! = {}", template_id);
-    println!("order_id = {}", order.order_id());
-    println!("client_id = {}", order.client_id());
-    println!("timestamp = {}", order.timestamp());
-    println!("order_type = {:?}", order.order_type());
+    println!(
+        "order_id = {}, client_id = {}, timestamp = {} order_type = {}",
+        order.order_id(),
+        order.client_id(),
+        order.timestamp(),
+        order.order_type()
+    );
 
     let mut items = order.items_decoder();
 
-    let _r = items.advance();
-    println!("product_id = {}", items.product_id());
-    println!("qty = {}", items.quantity());
-    let mut price = items.unit_price_decoder();
-    println!("price = {}", price.mantissa());
-    items = price.parent().unwrap();
+    let count = items.count();
 
+    for i in 1..=count {
+        let _r = items.advance();
+        let product_id = items.product_id();
+        let qty = items.quantity();
+        let mut price = items.unit_price_decoder();
+        let exponent = price.exponent();
+        let mantissa = price.mantissa();
+        println!("{i}. product_id = {product_id}, qty = {qty}, price = {mantissa} x 10^{exponent}");
+        items = price.parent().unwrap();
+    }
     order = items.parent().unwrap();
 
     let (offset, len) = order.customer_note_decoder();
