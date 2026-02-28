@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sbe:messageSchema
 	xmlns:sbe="http://fixprotocol.io/2016/sbe"
-	package="sales" semanticVersion="1.0.0"
+	package="sales_generated" semanticVersion="1.0.0"
 	description="Order message schema demonstrating fixed fields, repeating groups, and variable-length data."
 	id="100" version="1">
 

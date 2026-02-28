@@ -3,6 +3,6 @@ resolver = "2"
 
 # Define workspace members
 members = [
-    "sales",
+    "sales_generated",
     "my_sales_app",
 ]

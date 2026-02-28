@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-sales ={ path = "../sales"}
+sales_generated ={ path = "../sales_generated"}

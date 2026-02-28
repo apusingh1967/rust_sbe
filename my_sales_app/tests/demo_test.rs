@@ -1,7 +1,8 @@
-use sales::{
+use sales_generated::{
     Encoder, ReadBuf, WriteBuf,
     message_header_codec::{self, MessageHeaderDecoder},
     order_message_codec::{OrderMessageDecoder, OrderMessageEncoder, encoder::ItemsEncoder},
+    order_type::OrderType,
 };
 
 #[test]
@@ -20,7 +21,7 @@ fn simple() {
     order.order_id(234);
     order.client_id(135);
     order.timestamp(246);
-    order.order_type(sales::order_type::OrderType::New);
+    order.order_type(OrderType::New);
 
     let mut items = order.items_encoder(2, ItemsEncoder::default());
 
@@ -28,14 +29,14 @@ fn simple() {
     items.product_id(222);
     items.quantity(2);
     let mut price = items.unit_price_encoder();
-    price.mantissa(2345); // exponent is -2 (two decimals) constant in xml schema
+    price.mantissa(234); // exponent is -2 (two decimals) constant in xml schema
     items = price.parent().unwrap();
 
     let _r = items.advance();
-    items.product_id(333);
+    items.product_id(111);
     items.quantity(3);
     let mut price = items.unit_price_encoder();
-    price.mantissa(4567); // exponent is -2 (two decimals) constant in xml schema
+    price.mantissa(123); // exponent is -2 (two decimals) constant in xml schema
     items = price.parent().unwrap();
 
     order = items.parent().unwrap();
